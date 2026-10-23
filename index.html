@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Abbey Tracker</title>
+<meta name="description" content="Track the whale shark abbey's systems, arrays, and roster.">
+<meta name="theme-color" content="#f7f1ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1b1518" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Abbey">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<style>
+:root{
+  --bg:#f7f1ec; --panel:#fffaf6; --ink:#2b2326; --muted:#7a6a70; --line:#e6d6d9;
+  --rose:#8c2f4b; --rose-soft:#f3e3e8; --gold:#b08a3e;
+  --online:#2f7a5a; --online-bg:#e2f2ea;
+  --building:#a8701b; --building-bg:#fbeed6;
+  --dormant:#6b6a78; --dormant-bg:#ebeaf0;
+  --shadow:0 1px 2px rgba(60,20,30,.06),0 4px 14px rgba(60,20,30,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1b1518; --panel:#251d21; --ink:#f1e6ea; --muted:#b3a1a8; --line:#3d3036;
+    --rose:#e08aa5; --rose-soft:#3a2730; --gold:#d8b46a;
+    --online:#7fd1ab; --online-bg:#1f3a2e;
+    --building:#f0c071; --building-bg:#3d3020;
+    --dormant:#b4b3c4; --dormant-bg:#2e2d38;
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1b1518; --panel:#251d21; --ink:#f1e6ea; --muted:#b3a1a8; --line:#3d3036;
+  --rose:#e08aa5; --rose-soft:#3a2730; --gold:#d8b46a;
+  --online:#7fd1ab; --online-bg:#1f3a2e;
+  --building:#f0c071; --building-bg:#3d3020;
+  --dormant:#b4b3c4; --dormant-bg:#2e2d38;
+  --shadow:none;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;margin:0}
+.wrap{max-width:1100px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(60px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
+.title input{font:700 26px Georgia,serif;color:var(--rose);background:transparent;border:1px dashed transparent;border-radius:6px;padding:2px 6px;margin-left:-6px;width:min(100%,520px)}
+.title input:hover,.title input:focus{border-color:var(--line);outline:none}
+.sub{color:var(--muted);font-size:13px;margin-top:2px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px}
+button,.btn{font:inherit;font-size:14px;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 12px}
+button:hover,.btn:hover{border-color:var(--rose)}
+button.primary{background:var(--rose);border-color:var(--rose);color:#fff}
+:root[data-theme="dark"] button.primary{color:#1b1518}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button.primary{color:#1b1518}}
+button.ghost{background:transparent;border-color:transparent;color:var(--muted);padding:4px 8px}
+button.ghost:hover{color:var(--rose)}
+button.danger:hover{border-color:#c0392b;color:#c0392b}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0 16px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
+.stat b{display:block;font:700 24px Georgia,serif}
+.stat span{color:var(--muted);font-size:13px}
+.bar{height:8px;border-radius:99px;background:var(--dormant-bg);overflow:hidden;display:flex;margin-top:8px}
+.bar i{display:block;height:100%}
+.inq{background:var(--rose-soft);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+.inq input{font:inherit;background:transparent;border:1px dashed transparent;border-radius:6px;padding:2px 6px;color:var(--ink)}
+.inq input:hover,.inq input:focus{border-color:var(--line);outline:none}
+.inq label{color:var(--muted);font-size:13px}
+nav{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px;overflow-x:auto;position:sticky;top:0;z-index:5;background:var(--bg);padding-top:env(safe-area-inset-top);-webkit-overflow-scrolling:touch}
+nav button{border:none;border-bottom:2px solid transparent;border-radius:0;background:transparent;padding:9px 14px;color:var(--muted);white-space:nowrap}
+nav button.on{color:var(--rose);border-bottom-color:var(--rose);font-weight:600}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.controls .grow{flex:1}
+input[type=search],select,input[type=text],textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+input[type=search]{min-width:200px;flex:1}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:13px;padding:5px 11px;border-radius:99px}
+.chip.on{background:var(--rose);border-color:var(--rose);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px}
+.card h3{font-size:18px}
+.card .meta{color:var(--muted);font-size:13px}
+.card p{margin:0;font-size:14px;white-space:pre-wrap}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row .push{margin-left:auto}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px}
+.s-online{background:var(--online-bg);color:var(--online)}
+.s-building{background:var(--building-bg);color:var(--building)}
+.s-dormant{background:var(--dormant-bg);color:var(--dormant)}
+select.status{font-size:13px;padding:4px 8px;font-weight:600}
+.tag{font-size:12px;padding:2px 8px;border-radius:99px;background:var(--rose-soft);color:var(--rose)}
+.switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;user-select:none}
+.switch input{appearance:none;width:40px;height:22px;border-radius:99px;background:var(--dormant-bg);border:1px solid var(--line);position:relative;cursor:pointer;margin:0}
+.switch input::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--muted);transition:.15s}
+.switch input:checked{background:var(--rose)}
+.switch input:checked::after{left:20px;background:#fff}
+.switch input:disabled{opacity:.4;cursor:not-allowed}
+table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);background:var(--rose-soft)}
+tr.group td{background:var(--bg);font-family:Georgia,serif;font-weight:700;color:var(--rose)}
+.vacant{color:var(--muted);font-style:italic}
+.count{font-weight:700}
+.empty{color:var(--muted);text-align:center;padding:30px;border:1px dashed var(--line);border-radius:12px}
+.tablewrap{overflow-x:auto}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:0;width:min(520px,calc(100vw - 32px));box-shadow:0 10px 40px rgba(0,0,0,.25)}
+dialog::backdrop{background:rgba(30,10,20,.4)}
+dialog form{padding:18px;display:flex;flex-direction:column;gap:10px;max-height:calc(100dvh - 40px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+dialog label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+dialog .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+dialog textarea{min-height:70px;resize:vertical}
+dialog .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+dialog .actions .left{margin-right:auto}
+.toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:99px;font-size:14px;opacity:0;transition:.2s;pointer-events:none}
+.toast.show{opacity:1}
+.foot{color:var(--muted);font-size:12px;margin-top:24px;text-align:center}
+@media (max-width:560px){
+  dialog .two{grid-template-columns:1fr}
+  .title input{font-size:22px}
+  /* 16px stops iPhone from zooming in when a field is tapped */
+  input[type=search],input[type=text],input:not([type]),select,textarea,select.status,button,.btn,.inq input{font-size:16px}
+  button,.btn,select{min-height:42px}
+  button.ghost{min-height:36px}
+  .toolbar{width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .toolbar > *{text-align:center;padding:8px 4px;font-size:13px;display:flex;align-items:center;justify-content:center}
+  .summary{grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0 12px}
+  .stat{padding:8px 10px;border-radius:10px}
+  .stat b{font-size:19px}
+  .stat span{font-size:11.5px;line-height:1.3;display:block}
+  .inq{padding:8px 12px;gap:2px;margin-bottom:10px}
+  .inq label{min-width:92px}
+  .sub{font-size:12px}
+  input[type=search]{min-width:0;width:100%;flex-basis:100%}
+  .controls select{flex:1}
+  .controls .primary{flex:1 1 100%}
+  .grid{grid-template-columns:1fr}
+  .inq > div{width:100%;display:flex;align-items:center;gap:6px}
+  .inq input{flex:1;min-width:0}
+  dialog{width:calc(100vw - 20px);max-width:none}
+  th,td{padding:8px 9px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title">
+      <input id="abbeyName" aria-label="Abbey name">
+      <div class="sub">The Order of Ovshun · abbey and roster tracker</div>
+    </div>
+    <div class="toolbar">
+      <button class="primary" id="exportBtn" title="Download a JSON backup">Export backup</button>
+      <label class="btn" title="Load a JSON backup">Import backup<input type="file" id="importFile" accept=".json,application/json" hidden></label>
+      <button id="themeBtn" title="Switch light/dark">Theme</button>
+      <button class="danger" id="resetBtn" title="Restore the starting data">Reset</button>
+    </div>
+  </header>
+
+  <div class="inq">
+    <div><label>Inquisitor</label> <input id="inqName" size="18"></div>
+    <div><label>Realm</label> <input id="inqRealm" size="14"></div>
+    <div><label>In-world date</label> <input id="worldDate" size="18" placeholder="e.g. 8 October 1007 AY"></div>
+  </div>
+
+  <div class="summary" id="summary"></div>
+
+  <nav>
+    <button data-tab="abbey" class="on">Abbey</button>
+    <button data-tab="arrays">Arrays</button>
+    <button data-tab="roster">Roster</button>
+    <button data-tab="disciplines">Disciplines</button>
+  </nav>
+
+  <section id="tab-abbey">
+    <div class="controls">
+      <input type="search" id="sysSearch" placeholder="Search systems…">
+      <div class="chips" id="sysFilter"></div>
+      <button class="primary" id="addSys">+ Add system</button>
+    </div>
+    <div class="grid" id="sysGrid"></div>
+  </section>
+
+  <section id="tab-arrays" hidden>
+    <div class="controls">
+      <div class="grow sub">Toggle an array on or off once it's online. Arrays draw on the Qi stored in the Heart.</div>
+      <button class="primary" id="addArr">+ Add array</button>
+    </div>
+    <div class="grid" id="arrGrid"></div>
+  </section>
+
+  <section id="tab-roster" hidden>
+    <div class="controls">
+      <input type="search" id="monkSearch" placeholder="Search monks…">
+      <select id="monkDisc"></select>
+      <select id="monkRank"></select>
+      <button class="primary" id="addMonk">+ Add monk</button>
+    </div>
+    <div class="grid" id="monkGrid"></div>
+  </section>
+
+  <section id="tab-disciplines" hidden>
+    <div class="controls"><div class="grow sub">Which Disciplines are filled and which are still waiting for a monk.</div></div>
+    <div class="tablewrap"><table id="discTable"></table></div>
+    <h3 style="margin:22px 0 10px">Realms</h3>
+    <div class="tablewrap"><table id="rankTable"></table></div>
+  </section>
+
+  <div class="foot">Changes save automatically in this browser. Export a backup to keep them safe or move them to another device.</div>
+</div>
+
+<dialog id="sysDlg"><form method="dialog" id="sysForm">
+  <h2 id="sysDlgTitle">System</h2>
+  <label>Name<input type="text" name="name" required></label>
+  <div class="two">
+    <label>Location<input type="text" name="location" list="locList" placeholder="e.g. Belly"></label>
+    <label>Status<select name="status"></select></label>
+  </div>
+  <label>Notes<textarea name="notes"></textarea></label>
+  <div class="actions">
+    <button type="button" class="danger left" id="sysDel">Delete</button>
+    <button type="button" id="sysCancel">Cancel</button>
+    <button class="primary" value="save">Save</button>
+  </div>
+</form></dialog>
+
+<dialog id="arrDlg"><form method="dialog" id="arrForm">
+  <h2 id="arrDlgTitle">Array</h2>
+  <label>Name<input type="text" name="name" required></label>
+  <label>Function<input type="text" name="func"></label>
+  <label>Status<select name="status"></select></label>
+  <label>Notes<textarea name="notes"></textarea></label>
+  <div class="actions">
+    <button type="button" class="danger left" id="arrDel">Delete</button>
+    <button type="button" id="arrCancel">Cancel</button>
+    <button class="primary" value="save">Save</button>
+  </div>
+</form></dialog>
+
+<dialog id="monkDlg"><form method="dialog" id="monkForm">
+  <h2 id="monkDlgTitle">Monk</h2>
+  <label>Name<input type="text" name="name" required></label>
+  <div class="two">
+    <label>Discipline<select name="discipline"></select></label>
+    <label>Realm<select name="rank"></select></label>
+  </div>
+  <div class="two">
+    <label>Office<input type="text" name="office" list="officeList" placeholder="e.g. Prior"></label>
+    <label>Joined<input type="text" name="joined" placeholder="e.g. 3 Maius 1007 AY"></label>
+  </div>
+  <label>Personality<textarea name="personality"></textarea></label>
+  <label>Notes<textarea name="notes"></textarea></label>
+  <div class="actions">
+    <button type="button" class="danger left" id="monkDel">Delete</button>
+    <button type="button" id="monkCancel">Cancel</button>
+    <button class="primary" value="save">Save</button>
+  </div>
+</form></dialog>
+
+<datalist id="locList"></datalist>
+<datalist id="officeList"><option value="Prior"><option value="Armarius"></datalist>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+const KEY = 'ovshun-abbey-tracker-v1';
+const STATUSES = [
+  {id:'online', label:'Online'},
+  {id:'building', label:'Building / Waking'},
+  {id:'dormant', label:'Dormant'}
+];
+const DISCIPLINES = [
+  ['Sacred', ['Cantor','Scribe']],
+  ['Cultivation', ['Gardener','Granger','Fisher']],
+  ['The Cellar', ['Distiller','Vintner','Cellarer']],
+  ['Craft', ['Shaper','Mason']],
+  ['Stewardship', ['Infirmarian','Refectorian','Chamberlain','Purifier']],
+  ['Guardianship', ['Warden','Briar','Watcher']],
+  ['Travel', ['Wayfinder','Pilgrim']]
+];
+const ALL_DISC = DISCIPLINES.flatMap(g => g[1]);
+const RANKS = ['Unset','Seedling','Bud','Bloom','Thorn','Full Bloom','Eternal Rose'];
+const LOCATIONS = ['Mouth','Eyes','Head','Dorsal fin','Back','Flanks','Gills','Belly','Heart','Beside the heart','Tail'];
+
+const uid = () => Math.random().toString(36).slice(2, 10);
+
+function seed(){
+  const sys = (name, location, status, notes='') => ({id:uid(), name, location, status, notes});
+  const monk = (name, discipline, office, personality, notes='') => ({id:uid(), name, discipline, rank:'Unset', office, joined:'', personality, notes});
+  return {
+    version: 1,
+    abbeyName: 'The Whale Shark Abbey',
+    inquisitor: {name:'Raiza von Rosalind', realm:'Eternal Rose'},
+    worldDate: '8 October 1007 AY',
+    systems: [
+      sys('The Heart','Heart','online','Barely glowing. The abbey’s dantian, where the order’s Qi is stored.'),
+      sys('The Chapel','Head','online','Small but livable. Great rose window forming the brow.'),
+      sys('The Cloister','Back','online','Garth, dormitories, refectory, chapter house, infirmary. Small but livable.'),
+      sys('Glint Paddies','Back','online','A few paddies, enough to keep the sharks healthy.'),
+      sys('The Mouth (Gate)','Mouth','online','Works, but temperamental.'),
+      sys('The Stillhouse','Belly','building','A single small still, low yields.'),
+      sys('Agriculture Chamber','Flanks','building','One small chamber.'),
+      sys('The Storehouse','Belly','building','Mostly empty halls.'),
+      sys('The Library & Scriptorium','Head','building','A scriptorium and a few shelves, mostly Raiza’s first written techniques.'),
+      sys('Aquaculture Chambers','Flanks','dormant','Lakes, ponds, waterfalls, fishing piers.'),
+      sys('Pasture Chambers','Flanks','dormant','Meadows, barns, hives.'),
+      sys('The Font','Beside the heart','dormant','Where Qi and mana combine into raw materials.'),
+      sys('Vintage Vaults','Belly','dormant',''),
+      sys('The Bell Tower','Dorsal fin','dormant',''),
+      sys('The Guesthouse','Mouth','dormant','Just inside the gate, apart from the inner cloister.'),
+      sys('The Helm','Tail','dormant','Early on, the abbey drifts more than it is steered.')
+    ],
+    arrays: [
+      {id:uid(), name:'Defense Array', func:'Stops attacks against the abbey.', status:'online', active:false, notes:''},
+      {id:uid(), name:'Offensive Array', func:'Cultivators who sync to it can launch attacks from it.', status:'online', active:false, notes:''},
+      {id:uid(), name:'Rain Array', func:'Absorbs rainwater for purification, feeding fresh water into the water loop.', status:'online', active:false, notes:''}
+    ],
+    monks: [
+      monk('Jeffrey "Jeff"','Cantor','Prior','Mischievous, wonderful, lovable, likes to cuddle; responsible when he needs to be.','Raiza’s first son.'),
+      monk('Trowel','Gardener','','Hard worker, shy. Sometimes assists Dio.'),
+      monk('Clank','Mason','','Overworked and loving it, but wants help. Swears he can talk to the whale shark.'),
+      monk('Moonshine','Distiller','','Seems perpetually drunk on Glint; proud; protective of the mana.','Found in a smuggler’s crate of moonshine. The sway is part quirk, part fighting style.'),
+      monk('Bo','Granger','','Loves to eat, especially meat dishes and bread. Knows more about crops and husbandry than anyone.'),
+      monk('Dio','Infirmarian','','Serious. Doesn’t like it when his brothers get hurt, but heals them anyway.'),
+      monk('Speedy','Pilgrim','','Likes to move, goes fast, restless energy.')
+    ]
+  };
+}
+
+function normalize(d){
+  const s = seed();
+  if (!d || typeof d !== 'object') throw new Error('Not a valid backup');
+  const out = {
+    version: 1,
+    abbeyName: typeof d.abbeyName === 'string' ? d.abbeyName : s.abbeyName,
+    inquisitor: {
+      name: (d.inquisitor && typeof d.inquisitor.name === 'string') ? d.inquisitor.name : s.inquisitor.name,
+      realm: (d.inquisitor && typeof d.inquisitor.realm === 'string') ? d.inquisitor.realm : s.inquisitor.realm
+    },
+    worldDate: typeof d.worldDate === 'string' ? d.worldDate : '',
+    systems: [], arrays: [], monks: []
+  };
+  const st = v => STATUSES.some(x => x.id === v) ? v : 'dormant';
+  const str = v => typeof v === 'string' ? v : '';
+  if (!Array.isArray(d.systems) || !Array.isArray(d.monks)) throw new Error('Backup is missing systems or monks');
+  out.systems = d.systems.filter(x => x && x.name).map(x => ({id:str(x.id)||uid(), name:str(x.name), location:str(x.location), status:st(x.status), notes:str(x.notes)}));
+  out.arrays = (Array.isArray(d.arrays) ? d.arrays : []).filter(x => x && x.name).map(x => ({id:str(x.id)||uid(), name:str(x.name), func:str(x.func), status:st(x.status), active:!!x.active, notes:str(x.notes)}));
+  out.monks = d.monks.filter(x => x && x.name).map(x => ({id:str(x.id)||uid(), name:str(x.name), discipline:ALL_DISC.includes(x.discipline)?x.discipline:'', rank:RANKS.includes(x.rank)?x.rank:'Unset', office:str(x.office), joined:str(x.joined), personality:str(x.personality), notes:str(x.notes)}));
+  return out;
+}
+
+let data;
+try { const raw = localStorage.getItem(KEY); data = raw ? normalize(JSON.parse(raw)) : seed(); }
+catch(e){ data = seed(); }
+
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(data)); } catch(e){} }
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const statusLabel = id => (STATUSES.find(s => s.id === id) || STATUSES[2]).label;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2200); }
+
+// ---------- header fields ----------
+function bindField(sel, get, set){ const el = $(sel); el.value = get(); el.addEventListener('input', () => { set(el.value); save(); }); }
+function bindHeader(){
+  bindField('#abbeyName', () => data.abbeyName, v => data.abbeyName = v);
+  bindField('#inqName', () => data.inquisitor.name, v => data.inquisitor.name = v);
+  bindField('#inqRealm', () => data.inquisitor.realm, v => data.inquisitor.realm = v);
+  bindField('#worldDate', () => data.worldDate, v => data.worldDate = v);
+}
+
+// ---------- summary ----------
+function renderSummary(){
+  const all = [...data.systems, ...data.arrays];
+  const c = {online:0, building:0, dormant:0};
+  all.forEach(x => c[x.status]++);
+  const total = all.length || 1;
+  const active = data.arrays.filter(a => a.active && a.status === 'online').length;
+  const filled = new Set(data.monks.map(m => m.discipline).filter(Boolean)).size;
+  $('#summary').innerHTML = `
+    <div class="stat"><b>${c.online}</b><span>Online</span>
+      <div class="bar"><i style="width:${c.online/total*100}%;background:var(--online)"></i><i style="width:${c.building/total*100}%;background:var(--building)"></i></div></div>
+    <div class="stat"><b>${c.building}</b><span>Building</span></div>
+    <div class="stat"><b>${c.dormant}</b><span>Dormant</span></div>
+    <div class="stat"><b>${active}/${data.arrays.length}</b><span>Arrays active</span></div>
+    <div class="stat"><b>${data.monks.length}</b><span>Monks</span></div>
+    <div class="stat"><b>${filled}/${ALL_DISC.length}</b><span>Disciplines filled</span></div>`;
+}
+
+// ---------- systems ----------
+let sysFilter = 'all';
+function renderSysFilter(){
+  const opts = [{id:'all', label:'All'}, ...STATUSES];
+  $('#sysFilter').innerHTML = opts.map(o => `<button class="chip ${sysFilter===o.id?'on':''}" data-f="${o.id}">${o.label}</button>`).join('');
+}
+function statusSelect(id, current, kind){
+  return `<select class="status s-${current}" data-kind="${kind}" data-id="${id}" aria-label="Status">${STATUSES.map(s => `<option value="${s.id}" ${s.id===current?'selected':''}>${s.label}</option>`).join('')}</select>`;
+}
+function renderSystems(){
+  const q = $('#sysSearch').value.trim().toLowerCase();
+  const order = {online:0, building:1, dormant:2};
+  const list = data.systems
+    .filter(s => sysFilter === 'all' || s.status === sysFilter)
+    .filter(s => !q || (s.name + ' ' + s.location + ' ' + s.notes).toLowerCase().includes(q))
+    .sort((a,b) => order[a.status] - order[b.status]);
+  $('#sysGrid').innerHTML = list.length ? list.map(s => `
+    <div class="card">
+      <div class="row"><h3>${esc(s.name)}</h3><button class="ghost push" data-edit-sys="${s.id}">Edit</button></div>
+      <div class="row">${statusSelect(s.id, s.status, 'sys')}${s.location ? `<span class="tag">${esc(s.location)}</span>` : ''}</div>
+      ${s.notes ? `<p>${esc(s.notes)}</p>` : ''}
+    </div>`).join('') : `<div class="empty">No systems match.</div>`;
+}
+
+// ---------- arrays ----------
+function renderArrays(){
+  $('#arrGrid').innerHTML = data.arrays.length ? data.arrays.map(a => `
+    <div class="card">
+      <div class="row"><h3>${esc(a.name)}</h3><button class="ghost push" data-edit-arr="${a.id}">Edit</button></div>
+      <div class="row">${statusSelect(a.id, a.status, 'arr')}
+        <label class="switch push" title="${a.status==='online'?'Toggle':'Only online arrays can be switched on'}">
+          <input type="checkbox" data-toggle="${a.id}" ${a.active && a.status==='online' ? 'checked' : ''} ${a.status!=='online' ? 'disabled' : ''}>
+          <span>${a.active && a.status==='online' ? 'On' : 'Off'}</span>
+        </label></div>
+      ${a.func ? `<p>${esc(a.func)}</p>` : ''}
+      ${a.notes ? `<p class="meta">${esc(a.notes)}</p>` : ''}
+    </div>`).join('') : `<div class="empty">No arrays yet.</div>`;
+}
+
+// ---------- roster ----------
+function fillSelect(sel, items, first){
+  sel.innerHTML = (first ? `<option value="">${first}</option>` : '') + items.map(i => `<option value="${esc(i)}">${esc(i)}</option>`).join('');
+}
+function discSelectHTML(){
+  return `<option value="">No Discipline yet</option>` + DISCIPLINES.map(([g, ds]) => `<optgroup label="${g}">${ds.map(d => `<option>${d}</option>`).join('')}</optgroup>`).join('');
+}
+function renderRoster(){
+  const q = $('#monkSearch').value.trim().toLowerCase();
+  const fd = $('#monkDisc').value, fr = $('#monkRank').value;
+  const list = data.monks
+    .filter(m => !fd || m.discipline === fd)
+    .filter(m => !fr || m.rank === fr)
+    .filter(m => !q || [m.name, m.discipline, m.office, m.personality, m.notes].join(' ').toLowerCase().includes(q));
+  $('#monkGrid').innerHTML = list.length ? list.map(m => `
+    <div class="card">
+      <div class="row"><h3>${esc(m.name)}</h3><button class="ghost push" data-edit-monk="${m.id}">Edit</button></div>
+      <div class="row">
+        <span class="tag">${esc(m.discipline || 'No Discipline')}</span>
+        ${m.rank && m.rank !== 'Unset' ? `<span class="pill s-online">${esc(m.rank)}</span>` : ''}
+        ${m.office ? `<span class="pill s-building">${esc(m.office)}</span>` : ''}
+      </div>
+      ${m.personality ? `<p>${esc(m.personality)}</p>` : ''}
+      ${m.notes ? `<p class="meta">${esc(m.notes)}</p>` : ''}
+      ${m.joined ? `<div class="meta">Joined ${esc(m.joined)}</div>` : ''}
+    </div>`).join('') : `<div class="empty">No monks match.</div>`;
+}
+
+// ---------- disciplines ----------
+function renderDisciplines(){
+  let rows = `<tr><th>Discipline</th><th>Monks</th><th>Count</th></tr>`;
+  DISCIPLINES.forEach(([g, ds]) => {
+    rows += `<tr class="group"><td colspan="3">${g}</td></tr>`;
+    ds.forEach(d => {
+      const ms = data.monks.filter(m => m.discipline === d);
+      rows += `<tr><td>${d}</td><td>${ms.length ? ms.map(m => esc(m.name)).join(', ') : '<span class="vacant">Vacant</span>'}</td><td class="count">${ms.length}</td></tr>`;
+    });
+  });
+  const none = data.monks.filter(m => !m.discipline);
+  if (none.length) rows += `<tr class="group"><td colspan="3">Unassigned</td></tr><tr><td>No Discipline yet</td><td>${none.map(m => esc(m.name)).join(', ')}</td><td class="count">${none.length}</td></tr>`;
+  $('#discTable').innerHTML = rows;
+  let r = `<tr><th>Realm</th><th>Monks</th><th>Count</th></tr>`;
+  RANKS.forEach(k => {
+    const ms = data.monks.filter(m => m.rank === k);
+    if (k === 'Unset' && !ms.length) return;
+    r += `<tr><td>${k === 'Unset' ? 'Not set' : k}</td><td>${ms.length ? ms.map(m => esc(m.name)).join(', ') : '<span class="vacant">None</span>'}</td><td class="count">${ms.length}</td></tr>`;
+  });
+  $('#rankTable').innerHTML = r;
+}
+
+function renderAll(){ renderSummary(); renderSysFilter(); renderSystems(); renderArrays(); renderRoster(); renderDisciplines(); }
+
+// ---------- dialogs ----------
+function openEditor(kind, item){
+  const dlg = $('#' + kind + 'Dlg'), form = $('#' + kind + 'Form');
+  form.reset();
+  form.dataset.id = item ? item.id : '';
+  $('#' + kind + 'DlgTitle').textContent = (item ? 'Edit ' : 'New ') + ({sys:'system', arr:'array', monk:'monk'}[kind]);
+  $('#' + kind + 'Del').hidden = !item;
+  if (item) Object.keys(item).forEach(k => { if (form.elements[k] && form.elements[k].type !== 'checkbox') form.elements[k].value = item[k]; });
+  else if (kind !== 'monk') form.elements.status.value = 'dormant';
+  else form.elements.rank.value = 'Seedling';
+  dlg.showModal();
+  setTimeout(() => form.elements.name.focus(), 30);
+}
+function wireDialog(kind, listName, build){
+  const dlg = $('#' + kind + 'Dlg'), form = $('#' + kind + 'Form');
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const id = form.dataset.id, vals = build(form.elements);
+    if (!vals.name.trim()) return;
+    if (id) Object.assign(data[listName].find(x => x.id === id), vals);
+    else data[listName].push({id:uid(), ...vals});
+    save(); renderAll(); dlg.close(); toast('Saved');
+  });
+  $('#' + kind + 'Cancel').addEventListener('click', () => dlg.close());
+  $('#' + kind + 'Del').addEventListener('click', () => {
+    const id = form.dataset.id; const item = data[listName].find(x => x.id === id);
+    if (!item || !confirm(`Delete "${item.name}"?`)) return;
+    data[listName] = data[listName].filter(x => x.id !== id);
+    save(); renderAll(); dlg.close(); toast('Deleted');
+  });
+}
+
+// ---------- init ----------
+function init(){
+  bindHeader();
+  $('#locList').innerHTML = LOCATIONS.map(l => `<option value="${l}">`).join('');
+  ['sysForm','arrForm'].forEach(f => fillSelect($('#' + f).elements.status, STATUSES.map(s => s.id)));
+  ['sysForm','arrForm'].forEach(f => [...$('#' + f).elements.status.options].forEach(o => o.textContent = statusLabel(o.value)));
+  $('#monkForm').elements.discipline.innerHTML = discSelectHTML();
+  fillSelect($('#monkForm').elements.rank, RANKS);
+  $('#monkDisc').innerHTML = discSelectHTML().replace('No Discipline yet', 'All Disciplines');
+  fillSelect($('#monkRank'), RANKS.filter(r => r !== 'Unset'), 'All realms');
+
+  wireDialog('sys', 'systems', e => ({name:e.name.value, location:e.location.value, status:e.status.value, notes:e.notes.value}));
+  wireDialog('arr', 'arrays', e => ({name:e.name.value, func:e.func.value, status:e.status.value, notes:e.notes.value}));
+  wireDialog('monk', 'monks', e => ({name:e.name.value, discipline:e.discipline.value, rank:e.rank.value, office:e.office.value, joined:e.joined.value, personality:e.personality.value, notes:e.notes.value}));
+
+  document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
+    document.querySelectorAll('section[id^=tab-]').forEach(s => s.hidden = s.id !== 'tab-' + b.dataset.tab);
+    try { localStorage.setItem(KEY + '-tab', b.dataset.tab); } catch(e){}
+  }));
+  try { const t = localStorage.getItem(KEY + '-tab'); if (t) { const b = document.querySelector(`nav button[data-tab="${t}"]`); if (b) b.click(); } } catch(e){}
+
+  document.body.addEventListener('click', e => {
+    const t = e.target;
+    if (t.dataset.f){ sysFilter = t.dataset.f; renderSysFilter(); renderSystems(); }
+    if (t.dataset.editSys) openEditor('sys', data.systems.find(x => x.id === t.dataset.editSys));
+    if (t.dataset.editArr) openEditor('arr', data.arrays.find(x => x.id === t.dataset.editArr));
+    if (t.dataset.editMonk) openEditor('monk', data.monks.find(x => x.id === t.dataset.editMonk));
+  });
+  document.body.addEventListener('change', e => {
+    const t = e.target;
+    if (t.matches('select.status')){
+      const list = t.dataset.kind === 'sys' ? data.systems : data.arrays;
+      const item = list.find(x => x.id === t.dataset.id); item.status = t.value;
+      if (t.dataset.kind === 'arr' && t.value !== 'online') item.active = false;
+      save(); renderAll(); toast(`${item.name}: ${statusLabel(t.value)}`);
+    }
+    if (t.dataset.toggle){
+      const a = data.arrays.find(x => x.id === t.dataset.toggle); a.active = t.checked;
+      save(); renderSummary(); renderArrays(); toast(`${a.name} ${a.active ? 'on' : 'off'}`);
+    }
+  });
+  $('#sysSearch').addEventListener('input', renderSystems);
+  ['#monkSearch','#monkDisc','#monkRank'].forEach(s => $(s).addEventListener('input', renderRoster));
+  $('#addSys').addEventListener('click', () => openEditor('sys'));
+  $('#addArr').addEventListener('click', () => openEditor('arr'));
+  $('#addMonk').addEventListener('click', () => openEditor('monk'));
+
+  $('#exportBtn').addEventListener('click', async () => {
+    const name = `abbey-tracker-${new Date().toISOString().slice(0,10)}.json`;
+    const text = JSON.stringify({...data, exported: new Date().toISOString()}, null, 2);
+    try {
+      const file = new File([text], name, {type:'application/json'});
+      if (navigator.canShare && navigator.canShare({files:[file]}) && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        await navigator.share({files:[file], title:'Abbey tracker backup'});
+        toast('Backup ready: choose "Save to Files"');
+        return;
+      }
+    } catch(err){ if (err && err.name === 'AbortError') return; }
+    const blob = new Blob([text], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast('Backup downloaded');
+  });
+  $('#importFile').addEventListener('change', e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try {
+        const next = normalize(JSON.parse(r.result));
+        if (!confirm('Replace the current tracker with this backup?')) return;
+        data = next; save(); bindHeaderValues(); renderAll(); toast('Backup loaded');
+      } catch(err){ alert('That file could not be loaded: ' + err.message); }
+      finally { e.target.value = ''; }
+    };
+    r.readAsText(f);
+  });
+  $('#resetBtn').addEventListener('click', () => {
+    if (!confirm('Reset to the starting data? Export a backup first if you want to keep your changes.')) return;
+    data = seed(); save(); bindHeaderValues(); renderAll(); toast('Reset to starting data');
+  });
+  $('#themeBtn').addEventListener('click', () => {
+    const root = document.documentElement;
+    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = dark ? 'light' : 'dark';
+    try { localStorage.setItem(KEY + '-theme', root.dataset.theme); } catch(e){}
+  });
+  try { const th = localStorage.getItem(KEY + '-theme'); if (th) document.documentElement.dataset.theme = th; } catch(e){}
+
+  renderAll();
+}
+function bindHeaderValues(){
+  $('#abbeyName').value = data.abbeyName; $('#inqName').value = data.inquisitor.name;
+  $('#inqRealm').value = data.inquisitor.realm; $('#worldDate').value = data.worldDate;
+}
+init();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+})();
+</script>
+</body>
+</html>
